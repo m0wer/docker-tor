@@ -1,20 +1,21 @@
-ARG VERSION=0.4.7.13
+ARG VERSION=0.4.8.13
 
 ARG USER=toruser
 ARG UID=1000
 
 ARG DIR=/data
 
-FROM debian:11-slim as preparer-base
+FROM debian:12-slim as preparer-base
 
 RUN apt update
 RUN apt -y install gpg gpg-agent curl
 
 # Add tor key
-ENV KEYS 514102454D0A87DB0767A1EBBE6A0531C18A9179 B74417EDDF22AC9F9E90F49142E86A2A11F48D36 7A02B3521DC75C542BA015456AFEE6D49E92B601
+# Grabbed from https://gitlab.torproject.org/tpo/core/tor/-/blob/main/README.md#keys-that-can-sign-a-release
+ENV KEYS 514102454D0A87DB0767A1EBBE6A0531C18A9179 B74417EDDF22AC9F9E90F49142E86A2A11F48D36 2133BC600AB133E1D826D173FE43009C4607B1FB
 
 #RUN curl -s https://openpgpkey.torproject.org/.well-known/openpgpkey/torproject.org/hu/kounek7zrdx745qydx6p59t9mqjpuhdf |gpg --import -
-RUN gpg --keyserver keyserver.ubuntu.com --recv-keys $KEYS 
+RUN gpg --keyserver keys.openpgp.org --recv-keys $KEYS 
 
 RUN gpg --list-keys | tail -n +3 | tee /tmp/keys.txt && \
     gpg --list-keys $KEYS | diff - /tmp/keys.txt
@@ -35,7 +36,7 @@ RUN tar -xzf "/tor-$VERSION.tar.gz" && \
 
 FROM preparer-release AS preparer
 
-FROM debian:11-slim as builder
+FROM debian:12-slim as builder
 
 ARG VERSION
 
@@ -55,7 +56,7 @@ RUN ls -la /etc/tor
 RUN ls -la /var/lib
 RUN ls -la /var/lib/tor
 
-FROM debian:11-slim as final
+FROM debian:12-slim as final
 
 ARG VERSION
 ARG USER
