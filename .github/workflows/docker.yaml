@@ -2,7 +2,8 @@ name: Create and publish the Docker image
 
 on:
   push:
-    branch: master
+    branches:
+      - master
     tags:
       - '*'
 
