@@ -1,4 +1,5 @@
-ARG VERSION=0.4.8.14
+ARG VERSION=0.4.8.21
+ARG TOR_TARBALL_SHA256=eaf6f5b73091b95576945eade98816ddff7cd005befe4d94718a6f766b840903
 
 ARG USER=toruser
 ARG UID=1000
@@ -23,10 +24,13 @@ RUN gpg --list-keys | tail -n +3 | tee /tmp/keys.txt && \
 FROM preparer-base AS preparer-release
 
 ARG VERSION
+ARG TOR_TARBALL_SHA256
 
 ADD https://dist.torproject.org/tor-$VERSION.tar.gz.sha256sum.asc ./
 ADD https://dist.torproject.org/tor-$VERSION.tar.gz.sha256sum ./
-ADD https://dist.torproject.org/tor-$VERSION.tar.gz ./
+ADD --checksum="sha256:$TOR_TARBALL_SHA256" \
+    https://dist.torproject.org/tor-$VERSION.tar.gz \
+    ./
 
 RUN gpg --verify tor-$VERSION.tar.gz.sha256sum.asc
 RUN sha256sum -c tor-$VERSION.tar.gz.sha256sum
