@@ -13,39 +13,23 @@ jobs:
                 name: Build on push with branch looking like nolim1t*
                 steps:
                         - name: Checkout repo
-                          uses: actions/checkout@v2
+                          uses: actions/checkout@v5
 
-                        - name: Set env variables
-                          run: |
-                                  echo "BRANCH=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g')" >> $GITHUB_ENV
-                                  echo "SHORTSHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-                                  echo "DOCKER_HUB_REPO=tor" >> $GITHUB_ENV
+                        # https://github.com/docker/setup-qemu-action
+                        - name: Set up QEMU
+                          uses: docker/setup-qemu-action@v3
 
-                        - name: Show set env variables
-                          run: |
-                                  printf "    BRANCH: %s\n"  "$BRANCH"
-                                  printf "    SHORTSHA: %s\n"  "$SHORTSHA"
-                                  printf "    REPO: %s\n" "$GITHUB_REPOSITORY"
-                                  printf "    COMMIT ID: %s\n" "$GITHUB_SHA"
-                                  printf "    DOCKER REPO: %s\n" "$DOCKER_HUB_REPO"
-                                  printf "    GITHUB_ACTOR: %s\n" "$GITHUB_ACTOR"
-                                  printf "    GITHUB_REPOSITORY: %s\n" "$GITHUB_REPOSITORY"
-
-                        - name: Login to Docker Hub
-                          run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-                        - name: Setup Docker buildx action
-                          uses: crazy-max/ghaction-docker-buildx@v1
+                        # https://github.com/docker/setup-buildx-action
+                        - name: Set up Docker Buildx
+                          uses: docker/setup-buildx-action@v3
                           id: buildx
-                          with:
-                                  buildx-version: latest
-                                  qemu-version: latest
+
 
                         - name: Show available Docker buildx platforms
                           run: echo ${{ steps.buildx.outputs.platforms }}
 
                         - name: Cache Docker layers
-                          uses: actions/cache@v2
+                          uses: actions/cache@v4
                           id: cache
                           with:
                               path: /tmp/.buildx-cache

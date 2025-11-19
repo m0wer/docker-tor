@@ -14,7 +14,7 @@ jobs:
                 name: Build and push all the stuff defined in this repo
                 steps:
                         - name: Checkout repo
-                          uses: actions/checkout@v2
+                          uses: actions/checkout@v5
 
                         - name: Set env variables
                           run: |
@@ -35,18 +35,20 @@ jobs:
                         - name: Login to Docker Hub
                           run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-                        - name: Setup Docker buildx action
-                          uses: crazy-max/ghaction-docker-buildx@v1
+                        # https://github.com/docker/setup-qemu-action
+                        - name: Set up QEMU
+                          uses: docker/setup-qemu-action@v3
+
+                        # https://github.com/docker/setup-buildx-action
+                        - name: Set up Docker Buildx
+                          uses: docker/setup-buildx-action@v3
                           id: buildx
-                          with:
-                                  buildx-version: latest
-                                  qemu-version: latest
 
                         - name: Show available Docker buildx platforms
                           run: echo ${{ steps.buildx.outputs.platforms }}
 
                         - name: Cache Docker layers
-                          uses: actions/cache@v2
+                          uses: actions/cache@v4
                           id: cache
                           with:
                               path: /tmp/.buildx-cache
