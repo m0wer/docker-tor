@@ -1,13 +1,11 @@
-version: "3.8"
-
 services:
-    tor:
-        image: lncm/tor:0.4.7.9
-        container_name: tor
-        volumes:
-            - ${PWD}/data:/etc/tor
-            - ${PWD}/data:/var/lib/tor
-            - ${PWD}/run:/var/run/tor
-        restart: on-failure
-        network_mode: host
-        stop_grace_period: 10m30s
+  tor:
+    image: ghcr.io/m0wer/docker-tor:latest
+    container_name: tor
+    volumes:
+      - ${PWD}/data:/etc/tor
+      - ${PWD}/data:/var/lib/tor
+      - ${PWD}/run:/var/run/tor
+    restart: on-failure
+    network_mode: host
+    stop_grace_period: 10m30s

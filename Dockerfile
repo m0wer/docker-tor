@@ -66,7 +66,7 @@ ARG VERSION
 ARG USER
 ARG DIR
 
-LABEL maintainer="nolim1t (@nolim1t)"
+LABEL maintainer="m0wer"
 
 # Libraries (linked)
 COPY  --from=builder /usr/lib /usr/lib
