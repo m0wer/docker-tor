@@ -78,6 +78,12 @@ RUN adduser --disabled-password \
             --home "$DIR/" \
             --gecos "" \
             "$USER"
+
+# Copy default torrc configuration
+RUN mkdir -p /etc/tor && \
+    chown "$USER":"$USER" /etc/tor
+COPY  --chown=$USER:$USER torrc-dist /etc/tor/torrc
+
 USER $USER
 
 VOLUME /etc/tor
