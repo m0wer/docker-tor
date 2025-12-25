@@ -26,7 +26,16 @@ This allows you to use Tor as a proxy for your applications.
 
 ### Advanced Usage
 
-For more advanced configurations (hidden services, custom settings, etc.), mount your own `torrc` configuration file and any necessary data directories:
+For more advanced configurations (control port, custom settings, etc.), mount your own `torrc` configuration file:
+
+```bash
+docker run -d \
+  --name tor \
+  -v $PWD/torrc:/etc/tor/torrc \
+  ghcr.io/m0wer/docker-tor:latest
+```
+
+**For hidden services**, you must mount `/var/lib/tor` to persist your hidden service keys and allow Tor to create the necessary directories:
 
 ```bash
 docker run -d \
@@ -36,7 +45,7 @@ docker run -d \
   ghcr.io/m0wer/docker-tor:latest
 ```
 
-For hidden services, you'll need to mount `/var/lib/tor` to persist your hidden service keys. 
+Make sure the mounted `/var/lib/tor` directory is writable by the container user (UID 1000). 
 
 ### Docker Compose
 
@@ -48,17 +57,27 @@ docker compose -f docker-compose.yml-dist up
 
 ### Configuration Examples
 
-See [torrc-dist](torrc-dist) for a sample configuration file with hidden services and control port examples.
+The default [torrc-dist](torrc-dist) configuration provides a minimal SOCKS proxy setup. It includes commented examples for:
+- Control port with cookie authentication
+- Hidden services (SSH, Bitcoin P2P)
+
+**Note**: Both control port (with cookie auth) and hidden services require mounting `/var/lib/tor` as shown in the Advanced Usage section above.
 
 For a full configuration reference, see the [official Tor configuration documentation](https://github.com/torproject/tor/blob/main/src/config/torrc.sample.in).
 
+### Using the Control Port
+
+If you enable the control port with cookie authentication, you can interact with Tor using tools like `nyx` or libraries that support the Tor control protocol. The authentication cookie will be stored in `/var/lib/tor/control_auth_cookie`.
+
 ### Generating Tor Passwords
 
-To generate a hashed password for the control port:
+If you prefer password authentication over cookie authentication for the control port, you can generate a hashed password:
 
 ```bash
 docker run --rm ghcr.io/m0wer/docker-tor:latest --hash-password mypassword
 ```
+
+Then use `HashedControlPassword` in your torrc instead of `CookieAuthentication`.
 
 ## Building
 

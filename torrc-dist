@@ -1,19 +1,20 @@
-# This is a sample configuration
+# Minimal Tor configuration for SOCKS proxy
 
-# Ports
-SocksPort   0.0.0.0:9050
-ControlPort 127.0.0.1:9051
+# SOCKS proxy listening on all interfaces
+SocksPort 0.0.0.0:9050
 
-# Default Password (Please change)
-# Generate with: docker run --rm ghcr.io/m0wer/docker-tor:latest --hash-password yourpassword
-HashedControlPassword 16:C171CBB3DECE55156066E90509F28E3E5FDFACFB6211701926A200E70D
+# For advanced usage, uncomment and configure the following:
 
-# SSH v3
-HiddenServiceDir /var/lib/tor/ssh
-HiddenServiceVersion 3
-HiddenServicePort 22 127.0.0.1:22
+# Control port (requires mounting /var/lib/tor volume for cookie auth)
+# ControlPort 127.0.0.1:9051
+# CookieAuthentication 1
+# CookieAuthFile /var/lib/tor/control_auth_cookie
 
-# Bitcoin P2P v3
-HiddenServiceDir /var/lib/tor/bitcoin-p2p
-HiddenServiceVersion 3
-HiddenServicePort 8333 127.0.0.1:8333
+# Hidden services (requires mounting /var/lib/tor volume)
+# HiddenServiceDir /var/lib/tor/ssh
+# HiddenServiceVersion 3
+# HiddenServicePort 22 127.0.0.1:22
+
+# HiddenServiceDir /var/lib/tor/bitcoin-p2p
+# HiddenServiceVersion 3
+# HiddenServicePort 8333 127.0.0.1:8333
