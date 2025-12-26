@@ -6,14 +6,14 @@ ARG UID=1000
 
 ARG DIR=/data
 
-FROM debian:12-slim as preparer-base
+FROM debian:13-slim AS preparer-base
 
 RUN apt update
 RUN apt -y install gpg gpg-agent curl
 
 # Add tor key
 # Grabbed from https://gitlab.torproject.org/tpo/core/tor/-/blob/main/README.md#keys-that-can-sign-a-release
-ENV KEYS 514102454D0A87DB0767A1EBBE6A0531C18A9179 B74417EDDF22AC9F9E90F49142E86A2A11F48D36 2133BC600AB133E1D826D173FE43009C4607B1FB
+ENV KEYS="514102454D0A87DB0767A1EBBE6A0531C18A9179 B74417EDDF22AC9F9E90F49142E86A2A11F48D36 2133BC600AB133E1D826D173FE43009C4607B1FB"
 
 #RUN curl -s https://openpgpkey.torproject.org/.well-known/openpgpkey/torproject.org/hu/kounek7zrdx745qydx6p59t9mqjpuhdf |gpg --import -
 RUN gpg --keyserver keys.openpgp.org --recv-keys $KEYS 
@@ -40,7 +40,7 @@ RUN tar -xzf "/tor-$VERSION.tar.gz" && \
 
 FROM preparer-release AS preparer
 
-FROM debian:12-slim as builder
+FROM debian:13-slim AS builder
 
 ARG VERSION
 
@@ -60,10 +60,11 @@ RUN ls -la /etc/tor
 RUN ls -la /var/lib
 RUN ls -la /var/lib/tor
 
-FROM debian:12-slim as final
+FROM debian:13-slim AS final
 
 ARG VERSION
 ARG USER
+ARG UID
 ARG DIR
 
 LABEL maintainer="m0wer"
@@ -74,10 +75,8 @@ COPY  --from=builder /usr/lib /usr/lib
 COPY  --from=builder /usr/local/bin/tor*  /usr/local/bin/
 
 # NOTE: Default GID == UID == 1000
-RUN adduser --disabled-password \
-            --home "$DIR/" \
-            --gecos "" \
-            "$USER"
+RUN groupadd -g $UID $USER && \
+    useradd -m -u $UID -g $USER -s /bin/bash -d $DIR $USER
 
 # Copy default torrc configuration
 RUN mkdir -p /etc/tor && \
