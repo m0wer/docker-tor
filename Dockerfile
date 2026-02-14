@@ -83,6 +83,16 @@ RUN mkdir -p /etc/tor && \
     chown "$USER":"$USER" /etc/tor
 COPY  --chown=$USER:$USER torrc-dist /etc/tor/torrc
 
+# Create data and runtime directories with correct ownership and
+# permissions so that Tor can write hidden service keys, cache, and
+# control socket when running as the unprivileged user.
+RUN mkdir -p /var/lib/tor /var/run/tor && \
+    chown "$USER":"$USER" /var/lib/tor /var/run/tor && \
+    chmod 700 /var/lib/tor
+
+COPY  --chown=$USER:$USER docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 USER $USER
 
 VOLUME /etc/tor
@@ -90,4 +100,5 @@ VOLUME /var/lib/tor
 
 EXPOSE 9050 9051 29050 29051
 
-ENTRYPOINT ["tor"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["tor"]

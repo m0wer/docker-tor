@@ -18,3 +18,8 @@ SocksPort 0.0.0.0:9050
 # HiddenServiceDir /var/lib/tor/bitcoin-p2p
 # HiddenServiceVersion 3
 # HiddenServicePort 8333 127.0.0.1:8333
+
+# For hidden-service-only setups, disable SOCKS proxy and control port
+# to reduce attack surface:
+# SocksPort 0
+# ControlPort 0

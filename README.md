@@ -45,7 +45,30 @@ docker run -d \
   ghcr.io/m0wer/docker-tor:latest
 ```
 
-Make sure the mounted `/var/lib/tor` directory is writable by the container user (UID 1000). 
+The entrypoint automatically fixes directory and file permissions (`0700` for
+directories, `0600` for files) inside `/var/lib/tor` so that Tor's strict
+permission checks pass. The mounted host directory and any pre-existing key
+files **must be owned by the UID the container runs as** (default `1000`).
+
+When running with a custom `user:` in Docker Compose or `--user` on the CLI,
+make sure the host directory ownership matches:
+
+```bash
+# Example: prepare a hidden service data directory for UID 1000
+mkdir -p ./tor-data
+chown -R 1000:1000 ./tor-data
+chmod 700 ./tor-data
+```
+
+### Disabling the SOCKS Proxy and Control Port
+
+If you are only running hidden services and do not need SOCKS proxy or control
+port access, disable them in your `torrc` for a smaller attack surface:
+
+```
+SocksPort 0
+ControlPort 0
+```
 
 ### Docker Compose
 
