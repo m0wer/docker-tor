@@ -120,3 +120,30 @@ jobs:
             "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.sha }}-i386" \
             "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.sha }}-ppc64le" \
             "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.sha }}-s390x"
+
+      - name: Verify published manifests include all platforms
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t publish_tags < <(printf '%s\n' "${{ steps.meta.outputs.tags }}" | sed '/^[[:space:]]*$/d')
+          required_platforms=(
+            "linux/amd64"
+            "linux/arm64"
+            "linux/arm/v7"
+            "linux/arm/v6"
+            "linux/386"
+            "linux/ppc64le"
+            "linux/s390x"
+          )
+
+          for tag in "${publish_tags[@]}"; do
+            inspect="$(docker buildx imagetools inspect "$tag")"
+
+            for platform in "${required_platforms[@]}"; do
+              if ! grep -q "$platform" <<< "$inspect"; then
+                echo "Missing platform $platform in $tag"
+                exit 1
+              fi
+            done
+          done
