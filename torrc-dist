@@ -1,14 +1,17 @@
 # Minimal Tor configuration for SOCKS proxy
 
+# Keep persistent state outside the image user's /data home directory.
+DataDirectory /var/lib/tor
+
 # SOCKS proxy listening on all interfaces
 SocksPort 0.0.0.0:9050
 
 # For advanced usage, uncomment and configure the following:
 
-# Control port (requires mounting /var/lib/tor volume for cookie auth)
+# Control port (the cookie path below requires writable /var/run/tor)
 # ControlPort 127.0.0.1:9051
 # CookieAuthentication 1
-# CookieAuthFile /var/lib/tor/control_auth_cookie
+# CookieAuthFile /var/run/tor/control_auth_cookie
 
 # Hidden services (requires mounting /var/lib/tor volume)
 # HiddenServiceDir /var/lib/tor/ssh

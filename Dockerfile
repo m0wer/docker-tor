@@ -95,6 +95,10 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 USER $USER
 
+# Fail the image build if the shipped default configuration is invalid for the
+# unprivileged runtime user.
+RUN tor --verify-config -f /etc/tor/torrc
+
 VOLUME /etc/tor
 VOLUME /var/lib/tor
 
