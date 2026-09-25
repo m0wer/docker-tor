@@ -6,11 +6,17 @@ Tor service as a docker container, supporting multiple platforms/architectures (
 
 This project provides Docker images for the latest non-alpha Tor release from [https://dist.torproject.org/](https://dist.torproject.org/?C=M;O=D).
 
+Updates are automated: a scheduled GitHub Actions workflow checks for a new
+Tor release every 6 hours. When one is found, it builds the image and runs a
+smoke test (the container must bootstrap Tor and load an onion site). If that
+passes, it commits, tags and publishes the new version. See [Building](#building)
+for details.
+
 ## Tags
 
 * `latest` - Latest tagged release
 * `master` - Latest commit on master branch
-* Version tags (e.g., `0.4.8.21`) - Specific Tor versions
+* Version tags (e.g., `0.4.9.13`) - Specific Tor versions
 
 ## Usage
 
@@ -293,13 +299,22 @@ Then use `HashedControlPassword` in your torrc instead of `CookieAuthentication`
 
 ## Building
 
-To update to a new Tor version:
+Tor updates are automated by `.github/workflows/update-tor.yaml`, which runs
+every 6 hours. When a newer non-alpha release is published on
+[dist.torproject.org](https://dist.torproject.org/?C=M;O=D), it updates the
+Dockerfile, builds the image, runs the smoke test, then commits, tags and pushes
+the new version and triggers the image publishing workflow.
 
-1. Check [dist.torproject.org](https://dist.torproject.org/?C=M;O=D) for the latest non-alpha release
-2. Update `VERSION` and `TOR_TARBALL_SHA256` in the Dockerfile
-3. Tag and push to trigger the build:
+To update manually:
 
 ```bash
-git tag 0.4.8.21
-git push origin 0.4.8.21
+scripts/update-tor.sh               # updates VERSION and TOR_TARBALL_SHA256
+docker build -t docker-tor:test .
+scripts/smoke-test.sh docker-tor:test
+git tag 0.4.9.13
+git push origin 0.4.9.13
 ```
+
+The smoke test starts the container, waits for Tor to bootstrap, checks that
+traffic exits through Tor and fetches the Tor Project onion site through the
+SOCKS proxy.

@@ -1,0 +1,59 @@
+name: Update Tor
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: update-tor
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # Needed to dispatch docker.yaml: pushes made with GITHUB_TOKEN do not
+      # trigger other workflows, but workflow_dispatch events do.
+      actions: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: master
+
+      - name: Check for a newer Tor release
+        id: update
+        run: |
+          version="$(scripts/update-tor.sh)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build image
+        if: steps.update.outputs.version != ''
+        run: docker build -t docker-tor:test .
+
+      - name: Smoke test image
+        if: steps.update.outputs.version != ''
+        run: scripts/smoke-test.sh docker-tor:test
+
+      - name: Commit, tag and push
+        if: steps.update.outputs.version != ''
+        env:
+          VERSION: ${{ steps.update.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "feat: update Tor to version $VERSION"
+          git tag "$VERSION"
+          git push --atomic origin HEAD:master "refs/tags/$VERSION"
+
+      - name: Trigger image publishing
+        if: steps.update.outputs.version != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.update.outputs.version }}
+        run: |
+          gh workflow run docker.yaml --ref master
+          gh workflow run docker.yaml --ref "$VERSION"
