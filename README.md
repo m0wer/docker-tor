@@ -91,7 +91,7 @@ dedicated to this Tor container.
 ```yaml
 services:
   tor:
-    image: ghcr.io/m0wer/docker-tor:0.4.9.11
+    image: ghcr.io/m0wer/docker-tor:0.4.9.13
     restart: unless-stopped
     user: "1000:1000"
     command:
