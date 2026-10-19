@@ -68,6 +68,18 @@ chown -R 1000:1000 ./tor-data
 chmod 700 ./tor-data
 ```
 
+### Onion-Service Proof-of-Work Defenses
+
+The image includes Tor's proof-of-work (PoW) module. Defenses are disabled by
+default; enable them in each onion service's `torrc` block:
+
+```
+HiddenServicePoWDefensesEnabled 1
+```
+
+See the [Tor PoW documentation](https://onionservices.torproject.org/technology/security/pow/)
+for configuration details.
+
 ### Disabling the SOCKS Proxy and Control Port
 
 If you are only running hidden services and do not need SOCKS proxy or control
@@ -298,6 +310,13 @@ docker run --rm ghcr.io/m0wer/docker-tor:latest --hash-password mypassword
 Then use `HashedControlPassword` in your torrc instead of `CookieAuthentication`.
 
 ## Building
+
+Tor is compiled with `--enable-gpl` to include the bundled Equi-X/HashX PoW
+implementation. The resulting Tor binary is covered by the GPL; review the
+[licensing considerations](https://onionservices.torproject.org/technology/security/pow/#are-there-licensing-considerations-with-the-pow-mechanism)
+before redistributing the image. Every image build verifies that
+`tor --list-modules` reports `pow: yes`. Upstream notices and GPL/LGPL license
+texts are included in `/usr/local/share/licenses/tor/`.
 
 Tor updates are automated by `.github/workflows/update-tor.yaml`, which runs
 every 6 hours. When a newer non-alpha release is published on

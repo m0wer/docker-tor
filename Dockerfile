@@ -51,7 +51,7 @@ WORKDIR /tor-$VERSION/
 
 COPY  --from=preparer /tor-$VERSION/  ./
 
-RUN ./configure --sysconfdir=/etc --datadir=/var/lib
+RUN ./configure --sysconfdir=/etc --datadir=/var/lib --enable-gpl
 RUN make -j$(nproc)
 RUN make install
 
@@ -73,6 +73,10 @@ LABEL maintainer="m0wer"
 COPY  --from=builder /usr/lib /usr/lib
 # Copy all the TOR files
 COPY  --from=builder /usr/local/bin/tor*  /usr/local/bin/
+
+# Include upstream notices and the GPL/LGPL terms for the GPL-enabled build.
+COPY --from=builder /tor-$VERSION/LICENSE /usr/local/share/licenses/tor/
+COPY --from=builder /usr/share/common-licenses/GPL-3 /usr/share/common-licenses/LGPL-3 /usr/local/share/licenses/tor/
 
 # NOTE: Default GID == UID == 1000
 RUN groupadd -g $UID $USER && \
@@ -98,6 +102,11 @@ USER $USER
 # Fail the image build if the shipped default configuration is invalid for the
 # unprivileged runtime user.
 RUN tor --verify-config -f /etc/tor/torrc
+
+# Require GPL-gated proof-of-work support in every published architecture.
+RUN tor --list-modules > /tmp/tor-modules && \
+    grep -Fx 'pow: yes' /tmp/tor-modules && \
+    rm /tmp/tor-modules
 
 VOLUME /etc/tor
 VOLUME /var/lib/tor
